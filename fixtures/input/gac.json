@@ -1,6 +1,6 @@
 {
-  "client_id": "",
-  "client_secret": "",
-  "refresh_token": "",
+  "client_id": "000000000000-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com",
+  "client_secret": "test-secret",
+  "refresh_token": "test-refresh-token",
   "type": "authorized_user"
 }
