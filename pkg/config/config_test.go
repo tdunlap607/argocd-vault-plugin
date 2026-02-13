@@ -141,9 +141,9 @@ func TestNewConfig(t *testing.T) {
 		{
 			map[string]interface{}{
 				"AVP_TYPE":            "azurekeyvault",
-				"AZURE_TENANT_ID":     "test",
-				"AZURE_CLIENT_ID":     "test",
-				"AZURE_CLIENT_SECRET": "test",
+				"AZURE_TENANT_ID":     "00000000-0000-0000-0000-000000000000",
+				"AZURE_CLIENT_ID":     "00000000-0000-0000-0000-000000000000",
+				"AZURE_CLIENT_SECRET": "test-secret-value",
 			},
 			"*backends.AzureKeyVault",
 		},
@@ -225,23 +225,26 @@ fDGt+yaf3RaZbVwHSVLzxiXGsu1WQJde3uJeNh5c6z+5
 			"*backends.KubernetesSecret",
 		},
 	}
-	for _, tc := range testCases {
-		for k, v := range tc.environment {
-			os.Setenv(k, v.(string))
-		}
-		viper := viper.New()
-		config, err := config.New(viper, &config.Options{})
-		if err != nil {
-			t.Error(err)
-			t.FailNow()
-		}
-		xType := fmt.Sprintf("%T", config.Backend)
-		if xType != tc.expectedType {
-			t.Errorf("expected: %s, got: %s.", tc.expectedType, xType)
-		}
-		for k := range tc.environment {
-			os.Unsetenv(k)
-		}
+	for i, tc := range testCases {
+		t.Run(fmt.Sprintf("case_%d_%s", i, tc.expectedType), func(t *testing.T) {
+			for k, v := range tc.environment {
+				os.Setenv(k, v.(string))
+			}
+			t.Cleanup(func() {
+				for k := range tc.environment {
+					os.Unsetenv(k)
+				}
+			})
+			viper := viper.New()
+			config, err := config.New(viper, &config.Options{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			xType := fmt.Sprintf("%T", config.Backend)
+			if xType != tc.expectedType {
+				t.Errorf("expected: %s, got: %s.", tc.expectedType, xType)
+			}
+		})
 	}
 }
 
@@ -483,18 +486,22 @@ func TestNewConfigMissingParameter(t *testing.T) {
 			"*backends.DelineaSecretServer",
 		},
 	}
-	for _, tc := range testCases {
-		for k, v := range tc.environment {
-			os.Setenv(k, v.(string))
-		}
-		viper := viper.New()
-		_, err := config.New(viper, &config.Options{})
-		if err == nil {
-			t.Fatalf("%s should not instantiate", tc.expectedType)
-		}
-		for k := range tc.environment {
-			os.Unsetenv(k)
-		}
+	for i, tc := range testCases {
+		t.Run(fmt.Sprintf("case_%d_%s", i, tc.expectedType), func(t *testing.T) {
+			for k, v := range tc.environment {
+				os.Setenv(k, v.(string))
+			}
+			t.Cleanup(func() {
+				for k := range tc.environment {
+					os.Unsetenv(k)
+				}
+			})
+			viper := viper.New()
+			_, err := config.New(viper, &config.Options{})
+			if err == nil {
+				t.Fatalf("%s should not instantiate", tc.expectedType)
+			}
+		})
 	}
 }
 
